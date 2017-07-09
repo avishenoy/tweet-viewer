@@ -16,6 +16,48 @@ class App extends Component {
   }
 }
 
+class Searchbar extends Component {
+
+  constructor() {
+    super();
+    this.state = {
+      searchString : null
+    }
+    this.handleFilterStringChange = this.handleFilterStringChange.bind(this);
+    this.handleKeyPress = this.handleKeyPress.bind(this);
+  }
+
+  handleFilterStringChange(e)
+  {
+    console.log("Search bar changed to: " + e.target.value);
+    this.setState({searchString : e.target.value});
+    this.props.tweetDataChange(e.target.value);
+  }
+
+  handleKeyPress(event)
+  {
+    console.log("Event: " + event.key);
+    if (event.key === "Enter")
+    {
+      console.log("Got ENTER event");
+      this.props.tweetDataChange(this.props.searchString);
+    }
+  }
+
+  render() {
+    return (
+    <form>
+      <input 
+        type = "text" placeholder = "Search twitter handle.." 
+        onChange = {this.handleFilterStringChange}
+        onKeyPress = {(e) => this.handleKeyPress(e)}
+         />
+    </form>
+    );
+  }
+
+}
+
 class GetButton extends Component {
 
   render() {
@@ -57,9 +99,18 @@ class TweetTable extends Component {
     );
   }
 
-  getTweetData() 
+  getTweetData(searchString) 
   {
-    fetch("http://localhost:5000/v1/tweet/list")
+    console.log("searchString is: " + searchString);
+    if (searchString == null)
+    {
+      searchString = 'TeslaMotors';
+
+    }
+
+    console.log("getTweetData called with: " + searchString);
+    
+    fetch("http://localhost:5000/v1/tweet/list?queryString=" + searchString)
     .then(function(response){
       let r = response.json();
       console.log("Tweet list from server: " + r);
@@ -89,14 +140,6 @@ class TweetTable extends Component {
   }
 
   render() {
-    //var rows = [{ date : '23', text : 'a'}, { date: '24', text : 'b'} ];
-    var tRows = [];
-    var myFunc = this.addLoggin;
-    this.addLoggin("Test");
-    myFunc("Test2");
-
-    
-
     return (<div>
             <table>
               <thead>
@@ -106,25 +149,13 @@ class TweetTable extends Component {
                 </tr>
               </thead>
               <tbody>
-                {this.state.rowArray[0]}
-                {this.state.rowArray[1]}
-                {this.state.rowArray[2]}
-                {this.state.rowArray[3]}
-                {this.state.rowArray[4]}
-                {this.state.rowArray[5]}
-                {this.state.rowArray[6]}
-                {this.state.rowArray[7]}
-                {this.state.rowArray[8]}
-                {this.state.rowArray[9]}
+                {this.state.rowArray}
               </tbody>
               </table>
-              <GetButton handleOnClick={() => this.getTweetData()} />
+              <Searchbar tweetDataChange = {(e) => this.getTweetData(e)} />
+              <GetButton handleOnClick={() => this.getTweetData(null)} />
               </div>
-            );
-    
-
-
-    
+            );    
   }
 
 }
