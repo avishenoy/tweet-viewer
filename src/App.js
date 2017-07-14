@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import BarChart from './BarChart.js';
 
 class App extends Component {
   render() {
@@ -75,6 +76,7 @@ class TweetTable extends Component {
     super();
     this.state = {
       rowArray : Array(10).fill(null),
+      favCount : Array(10).fill(null)
     }
   }
 
@@ -119,13 +121,16 @@ class TweetTable extends Component {
     .then(function(processedData){
       var rows = processedData;
       var processedRow = [];
+      var tweetFavCount = [];
       console.log("Second level processor: " + rows);
 
         rows.forEach(function(entry, i){
           console.log("Each entry: " + entry.date + " ||| " + entry.text);
-          //tRows.push(<TweetRow key={entry.date} tDate={entry.date} tText={entry.text}/>);
           processedRow.push(<TweetRow key={entry.text} tDate={entry.date} tText={entry.text}/>);
+          tweetFavCount.push(entry.favorite_count);
+          console.log("Each date: " + entry.date + " fav #: " + entry.favorite_count + " retweet #: " + entry.retweet_count);
         }, this);
+        this.setState({favCount : tweetFavCount});
         return processedRow;
     }.bind(this))
     .then(function(processedTweetRows){
@@ -152,8 +157,13 @@ class TweetTable extends Component {
                 {this.state.rowArray}
               </tbody>
               </table>
+              <div>
               <Searchbar tweetDataChange = {(e) => this.getTweetData(e)} />
               <GetButton handleOnClick={() => this.getTweetData(null)} />
+              </div>
+              <div>
+              <BarChart data={this.state.favCount} size={[500, 500]} />
+              </div>
               </div>
             );    
   }
