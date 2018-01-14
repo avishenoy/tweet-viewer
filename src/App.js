@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import BarChart from './BarChart.js';
+import C3Chart from 'react-c3js';
 
 class App extends Component {
   render() {
@@ -76,7 +77,9 @@ class TweetTable extends Component {
     super();
     this.state = {
       rowArray : Array(10).fill(null),
-      favCount : Array(10).fill(null)
+      favCount : Array(10).fill(null),
+      vData : [],
+      vTimeStamp : []
     }
   }
 
@@ -122,15 +125,24 @@ class TweetTable extends Component {
       var rows = processedData;
       var processedRow = [];
       var tweetFavCount = [];
+      var vizData = {};
+      var vizIndex = [];
+
       console.log("Second level processor: " + rows);
 
         rows.forEach(function(entry, i){
           console.log("Each entry: " + entry.date + " ||| " + entry.text);
           processedRow.push(<TweetRow key={entry.text} tDate={entry.date} tText={entry.text}/>);
+          var tempCount = [];
+          tempCount.push(entry.favorite_count);
+          vizData[entry.date] = tempCount;
+          vizIndex.push(entry.date);
+
           tweetFavCount.push(entry.favorite_count);
           console.log("Each date: " + entry.date + " fav #: " + entry.favorite_count + " retweet #: " + entry.retweet_count);
         }, this);
-        this.setState({favCount : tweetFavCount});
+
+        this.setState({favCount : tweetFavCount, vTimeStamp : vizIndex});
         return processedRow;
     }.bind(this))
     .then(function(processedTweetRows){
@@ -164,6 +176,12 @@ class TweetTable extends Component {
               <div>
               <BarChart data={this.state.favCount} size={[500, 500]} />
               </div>
+              <div>
+                <div id="vizChart" >
+                </div>
+                <C3Chart data={{json : this.state.favCount, type: 'pie'}} />
+              </div>
+              
               </div>
             );    
   }
